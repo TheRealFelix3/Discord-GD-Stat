@@ -20,7 +20,7 @@
   "dependencies": {
     "discordie": "^0.8.1",
     "express": "^4.14.0",
-	"jimp": "oliver-moran/jimp#pull/199/head",
-    "request": "^2.75.0"
+    "request": "^2.75.0",
+	"jimp": "oliver-moran/jimp#pull/199/head"
   }
 }
