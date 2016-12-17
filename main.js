@@ -30,7 +30,7 @@ initExpress(); // initializes express port listening
 
 // ping self every 5 minutes
 setInterval( function() {
-	request.get('/wake.txt');
+	request.get('http://discord-gd-stats-bot2.herokuapp.com/wake.txt');
 }, 300000);
 
 //////////////////////////////////// INIT //////////////////////////////////////
