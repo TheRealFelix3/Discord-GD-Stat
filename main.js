@@ -28,8 +28,9 @@ var app = express(); // creates new express app instance
 var port = process.env.PORT || 8080; // assign port. if no port given use localhost
 initExpress(); // initializes express port listening
 
+// ping self every 5 minutes
 setInterval( function() {
-	request.get('https://discord-gd-stats-bot2.herokuapp.com/wake.txt');
+	request.get('/wake.txt');
 }, 300000);
 
 //////////////////////////////////// INIT //////////////////////////////////////
@@ -59,16 +60,29 @@ client.Dispatcher.on("MESSAGE_CREATE", function(e) {
 	// checks if message starts with the command prefix.
 	if (e.message.content.substring(0, config.command_prefix.length) == config.command_prefix) {
 		let messageContent = e.message.content.substr(config.command_prefix.length); // remove the prefix from the message
+		let messageCommand = messageContent.toLowerCase().split(" "); // split into array at space
 
-		// checks if command is stats
-		if (messageContent.substring(0, 6) == "stats ") {
-			let GD_user = messageContent.substr(6); // bind local GD_user as provided username
-			getUserStats(GD_user, e.message);
+		// check if user stats command
+		if (messageCommand[0] == "stats" || messageCommand[0] == "player" || messageCommand[0] == "user") {
+
+			// check if not blank
+			if ( messageCommand.length > 1) {
+				let GD_user = messageContent.substr(messageCommand[0].length+1); // remove command and empty space after it
+				getUserStats( GD_user, e.message ); // pass to poller
+			} else {
+				errorOut(5, e.message); // if blank error out
+			};
 		}
-		//checks if command is level
-		else if (messageContent.substring(0, 6) == "level ") {
-			let GD_level = messageContent.substr(6); // bind local GD_level as provided string
-			getLevelStats(GD_level, e.message);
+		// check if level stats command
+		else if ( messageCommand[0] == "level" || messageCommand[0] == "userlevel" ) {
+
+			// check if not blank
+			if ( messageCommand.length > 1 ) {
+				let GD_level = messageContent.substr(messageCommand[0].length+1); // remove command and empty space after it
+				getLevelStats( GD_level, e.message ); // pass to poller
+			} else {
+				errorOut(6, e.message); // if blank error out
+			};
 		};
 	};
 });
@@ -503,22 +517,24 @@ function formatData(data) {
 }
 
 // error list
-var errorString = [
-	"Database Error! [ USER NOT FOUND ]", //0
-	"Communication Error! [ SEE LOG ]", //1
-	"SYSTEM ERROR [ SEE LOG ]", //2
-	"Database Error! [ LEVEL NOT FOUND ]", //3
-	"Unknown Error! [ SEE LOG ]"
-]
+var errorString = {
+	"0": "Database Error! [ USER NOT FOUND ]",
+	"1": "Communication Error! [ SEE LOG ]",
+	"2": "SYSTEM ERROR [ SEE LOG ]",
+	"3": "Database Error! [ LEVEL NOT FOUND ]",
+	"4": "Unknown Error! [ SEE LOG ]",
+	"5": "USAGE `" + config.command_prefix + "stats <USERNAME>`",
+	"6": "USAGE `" + config.command_prefix + "level <NAME OR ID>`"
+};
 
 // error printer
 function errorOut(num, mseg) {
-	if (num != null && num < errorString.length - 1) {
-		mseg.channel.sendMessage(errorString[num]);
+	if (num != null && errorString[num.toString()] != undefined) {
+		mseg.channel.sendMessage(errorString[num.toString()]);
 	} else {
-		mseg.channel.sendMessage(errorString[4]);
-	}
-}
+		mseg.channel.sendMessage(errorString["4"]);
+	};
+};
 
 // Express lib is used to respond to the heroku server and prevent from automatic close
 function initExpress() {
