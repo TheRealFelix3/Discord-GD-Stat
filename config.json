@@ -2,5 +2,6 @@
   "token": "",
   "name": "GD STATS",
   "playing": "made by Nexrem",
-  "command_prefix": "^"
+  "command_prefix": "^",
+  "getTarget": "http://discord-gd-stats-bot.herokuapp.com/wake.txt"
 }

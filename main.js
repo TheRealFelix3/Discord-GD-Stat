@@ -28,10 +28,6 @@ var app = express(); // creates new express app instance
 var port = process.env.PORT || 8080; // assign port. if no port given use localhost
 initExpress(); // initializes express port listening
 
-// ping self every 5 minutes
-setInterval( function() {
-	request.get('http://discord-gd-stats-bot2.herokuapp.com/wake.txt');
-}, 300000);
 
 //////////////////////////////////// INIT //////////////////////////////////////
 
@@ -51,6 +47,11 @@ client.Dispatcher.on("GATEWAY_READY", function(e) {
 	client.User.setStatus("online", config.playing); // online, playing
 	client.User.setUsername(config.name); // username
 });
+
+// ping self every 5 minutes
+setInterval( function() {
+	request.get(config["getTarget"]);
+}, 300000);
 
 
 //////////////////////////////// RUNTIME ///////////////////////////////////////
@@ -160,6 +161,7 @@ function getUserStats(GD_user, mseg) {
 							let DART = objectArray["25"]
 							let ROBOT = objectArray["26"]
 							let GLOW = objectArray["28"]
+							let DIAMONDS = objectArray["46"] || "0"
 
 							// display unknown for unknown icons and colors
 							if (parseInt(ICON) > icons.icon) ICON = "unknown"
@@ -177,7 +179,7 @@ function getUserStats(GD_user, mseg) {
 							)
 
 							// sends to card generator
-							generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, COLOR1, COLOR2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS);
+							generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, COLOR1, COLOR2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS, DIAMONDS);
 
 						};
 					});
@@ -275,7 +277,7 @@ function getLevelStats(GD_level, mseg) {
 };
 
 // player card generator function
-function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, COL1, COL2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS) {
+function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, COL1, COL2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS, DIAMONDS) {
 
 	// reads all image data
 	Jimp.read("./resources/player/skeleton-player.png", function(err0, skeletonPlayer) {
@@ -326,8 +328,9 @@ function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, COL1, COL2
 											.print(font, 60, 117, STARS)
 											.print(font, 207, 117, USERCOINS)
 											.print(font, 325, 117, COINS)
-											.print(font, 60, 156, DEMONS)
-											.print(font, 207, 156, CREATORPOINTS)
+											.print(font, 60, 156, DIAMONDS)
+											.print(font, 207, 156, DEMONS)
+											.print(font, 325, 156, CREATORPOINTS)
 											// write file
 											.write(outputfile, function() {
 												// upload file
