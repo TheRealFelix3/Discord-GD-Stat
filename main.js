@@ -99,7 +99,7 @@ function getUserStats(GD_user, mseg) {
 			url: 'http://www.boomlings.com/database/getGJUsers20.php',
 			form: {
 				gameVersion: "20",
-				binaryVersion: "29",
+				binaryVersion: "30",
 				str: GD_user,
 				total: "0",
 				page: "0",
@@ -125,7 +125,7 @@ function getUserStats(GD_user, mseg) {
 						url: 'http://www.boomlings.com/database/getGJUserInfo20.php',
 						form: {
 							gameVersion: "20",
-							binaryVersion: "29",
+							binaryVersion: "30",
 							targetAccountID: objectArray["16"],
 							secret: "Wmfd2893gb7"
 						}
@@ -143,43 +143,45 @@ function getUserStats(GD_user, mseg) {
 							let objectArray = formatData(body2.split("|")[0]);
 
 								// bind data values to variables
-							let USERNAME = objectArray["1"]
-							let USERID = objectArray["2"]
-							let COINS = objectArray["13"]
-							let USERCOINS = objectArray["17"]
-							let COLOR1 = objectArray["10"]
-							let COLOR2 = objectArray["11"]
-							let STARS = objectArray["3"]
-							let DEMONS = objectArray["4"]
-							let CREATORPOINTS = objectArray["8"]
-							let ACCOUNTID = objectArray["16"]
-							let YOUTUBE = objectArray["20"]
-							let ICON = objectArray["21"]
-							let SHIP = objectArray["22"]
-							let BALL = objectArray["23"]
-							let UFO = objectArray["24"]
-							let DART = objectArray["25"]
-							let ROBOT = objectArray["26"]
-							let GLOW = objectArray["28"]
-							let DIAMONDS = objectArray["46"] || "0"
+							let USERNAME = objectArray["1"];
+							let USERID = objectArray["2"];
+							let COINS = objectArray["13"];
+							let USERCOINS = objectArray["17"];
+							let COLOR1 = objectArray["10"];
+							let COLOR2 = objectArray["11"];
+							let STARS = objectArray["3"];
+							let DEMONS = objectArray["4"];
+							let CREATORPOINTS = objectArray["8"];
+							let ACCOUNTID = objectArray["16"];
+							let YOUTUBE = objectArray["20"];
+							let ICON = objectArray["21"];
+							let SHIP = objectArray["22"];
+							let BALL = objectArray["23"];
+							let UFO = objectArray["24"];
+							let DART = objectArray["25"];
+							let ROBOT = objectArray["26"];
+							let GLOW = objectArray["28"];
+							let SPIDER = objectArray["43"] || "0"; // or 0 if null data for pre 2.1
+							let DIAMONDS = objectArray["46"] || "0";
 
 							// display unknown for unknown icons and colors
-							if (parseInt(ICON) > icons.icon) ICON = "unknown"
-							if (parseInt(SHIP) > icons.ship) SHIP = "unknown"
-							if (parseInt(BALL) > icons.ball) BALL = "unknown"
-							if (parseInt(UFO) > icons.ufo) UFO = "unknown"
-							if (parseInt(DART) > icons.wave) DART = "unknown"
-							if (parseInt(ROBOT) > icons.robot) ROBOT = "unknown"
-							if (parseInt(COLOR1) > colors.count) COLOR1 = "0"
-							if (parseInt(COLOR2) > colors.count) COLOR2 = "3"
+							if (parseInt(ICON) > icons.icon) ICON = "unknown";
+							if (parseInt(SHIP) > icons.ship) SHIP = "unknown";
+							if (parseInt(BALL) > icons.ball) BALL = "unknown";
+							if (parseInt(UFO) > icons.ufo) UFO = "unknown";
+							if (parseInt(DART) > icons.wave) DART = "unknown";
+							if (parseInt(ROBOT) > icons.robot) ROBOT = "unknown";
+							if (parseInt(SPIDER) > icons.spider) SPIDER = "unknown";
+							if (parseInt(COLOR1) > colors.count) COLOR1 = "0";
+							if (parseInt(COLOR2) > colors.count) COLOR2 = "3";
 
 							// log
 							console.log("User request by: " + mseg.author.username + " [" + mseg.author.id +
 								"] || " + mseg.guild.name + " [" + mseg.channel.name + "] || [" + GD_user + "]"
-							)
+							);
 
 							// sends to card generator
-							generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, COLOR1, COLOR2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS, DIAMONDS);
+							generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, COLOR1, COLOR2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS, DIAMONDS);
 
 						};
 					});
@@ -196,7 +198,7 @@ function getLevelStats(GD_level, mseg) {
 			url: 'http://www.boomlings.com/database/getGJLevels21.php',
 			form: {
 				gameVersion: "20",
-				binaryVersion: "29",
+				binaryVersion: "30",
 				str: GD_level,
 				total: "0",
 				page: "0",
@@ -277,7 +279,7 @@ function getLevelStats(GD_level, mseg) {
 };
 
 // player card generator function
-function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, COL1, COL2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS, DIAMONDS) {
+function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, COL1, COL2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS, DIAMONDS) {
 
 	// reads all image data
 	Jimp.read("./resources/player/skeleton-player.png", function(err0, skeletonPlayer) {
@@ -287,60 +289,65 @@ function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, COL1, COL2
 					Jimp.read("./resources/icons/ufo/" + UFO + ".png", function(err4, ufo) {
 						Jimp.read("./resources/icons/wave/" + DART + ".png", function(err5, wave) {
 							Jimp.read("./resources/icons/robot/" + ROBOT + ".png", function(err6, robot) {
-								Jimp.loadFont("./resources/bigFont.fnt", function(err7, font) {
+								Jimp.read("./resources/icons/spider/" + SPIDER + ".png", function(err7, spider) {
+									Jimp.loadFont("./resources/bigFont.fnt", function(err8, font) {
 
-									// error handling
-									if (err0 || err1 || err2 || err3 || err4 || err5 || err6 || err7) {
-										errorOut(2, mseg);
-										console.log([err0, err1, err2, err3, err4, err5, err6, err7]);
-										return; // stop function execution
-									} else {
+										// error handling
+										if (err0 || err1 || err2 || err3 || err4 || err5 || err6 || err7) {
+											errorOut(2, mseg);
+											console.log([err0, err1, err2, err3, err4, err5, err6, err7]);
+											return; // stop function execution
+										} else {
 
-										// sends to recolor function and waits for callback. then rescales.
-										reColor(icon, colors[COL1], colors[COL2]).resize(42, Jimp.AUTO);
-										reColor(ship, colors[COL1], colors[COL2]).resize(46, Jimp.AUTO);
-										reColor(ball, colors[COL1], colors[COL2]).resize(42, Jimp.AUTO);
-										reColor(ufo, colors[COL1], colors[COL2]).resize(48, Jimp.AUTO);
-										reColor(wave, colors[COL1], colors[COL2]).resize(32, Jimp.AUTO);
-										reColor(robot, colors[COL1], colors[COL2]).resize(38, Jimp.AUTO);
+											// sends to recolor function and waits for callback. then rescales.
+											reColor(icon, colors[COL1], colors[COL2]).resize(42, Jimp.AUTO);
+											reColor(ship, colors[COL1], colors[COL2]).resize(46, Jimp.AUTO);
+											reColor(ball, colors[COL1], colors[COL2]).resize(42, Jimp.AUTO);
+											reColor(ufo, colors[COL1], colors[COL2]).resize(48, Jimp.AUTO);
+											reColor(wave, colors[COL1], colors[COL2]).resize(32, Jimp.AUTO);
+											reColor(robot, colors[COL1], colors[COL2]).resize(38, Jimp.AUTO);
+											reColor(spider, colors[COL1], colors[COL2]).resize(48, Jimp.AUTO);
 
-										// if glow add glow
-										if (GLOW == "1") {
-											icon = addGlow(icon, COL1, COL2); // rebind after recolor
-											ship = addGlow(ship, COL1, COL2);
-											ball = addGlow(ball, COL1, COL2);
-											ufo = addGlow(ufo, COL1, COL2);
-											wave = addGlow(wave, COL1, COL2);
-											robot = addGlow(robot, COL1, COL2);
-										}
+											// if glow add glow
+											if (GLOW == "1") {
+												icon = addGlow(icon, COL1, COL2); // rebind after recolor
+												ship = addGlow(ship, COL1, COL2);
+												ball = addGlow(ball, COL1, COL2);
+												ufo = addGlow(ufo, COL1, COL2);
+												wave = addGlow(wave, COL1, COL2);
+												robot = addGlow(robot, COL1, COL2);
+												spider = addGlow(spider, COL1, COL2);
+											}
 
-										let outputfile = "./output/" + Math.random().toString(36).substr(2, 5) + ".png" // create a random name for the output file
+											let outputfile = "./output/" + Math.random().toString(36).substr(2, 5) + ".png" // create a random name for the output file
 
-										//  overlay the changed drawables on top of our base.
-										skeletonPlayer
-											.composite(icon, 40, 64)
-											.composite(ship, 94, 70)
-											.composite(ball, 150, 64)
-											.composite(ufo, 208, 75)
-											.composite(wave, 272, 64)
-											.composite(robot, 320, 64)
-											.print(font, 2, 2, USERNAME, 394, Jimp.ALIGN_FONT_CENTER) // print some text with a custom font.
-											.print(font, 60, 117, STARS)
-											.print(font, 207, 117, USERCOINS)
-											.print(font, 325, 117, COINS)
-											.print(font, 60, 156, DIAMONDS)
-											.print(font, 207, 156, DEMONS)
-											.print(font, 325, 156, CREATORPOINTS)
-											// write file
-											.write(outputfile, function() {
-												// upload file
-												mseg.channel.uploadFile(outputfile).then(function() {
-													// delete file
-													fs.unlink(outputfile);
-													console.log("SUCCESS: " + USERNAME);
+											//  overlay the changed drawables on top of our base.
+											skeletonPlayer
+												.composite(icon, 40, 64)
+												.composite(ship, 98, 70)
+												.composite(ball, 158, 64)
+												.composite(ufo, 216, 75)
+												.composite(wave, 282, 64)
+												.composite(robot, 333, 64)
+												.composite(spider, 385, 68)
+												.print(font, 2, 2, USERNAME, 478, Jimp.ALIGN_FONT_CENTER) // print some text with a custom font.
+												.print(font, 75, 117, STARS)
+												.print(font, 246, 117, USERCOINS)
+												.print(font, 393, 117, COINS)
+												.print(font, 75, 156, DIAMONDS)
+												.print(font, 246, 156, DEMONS)
+												.print(font, 393, 156, CREATORPOINTS)
+												// write file
+												.write(outputfile, function() {
+													// upload file
+													mseg.channel.uploadFile(outputfile).then(function() {
+														// delete file
+														fs.unlink(outputfile);
+														console.log("SUCCESS: " + USERNAME);
+													});
 												});
-											});
-									};
+										};
+									});
 								});
 							});
 						});
