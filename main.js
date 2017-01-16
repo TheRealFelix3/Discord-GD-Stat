@@ -176,12 +176,11 @@ function getUserStats(GD_user, mseg) {
 							if (parseInt(COLOR2) > colors.count) COLOR2 = "3";
 
 							// fix log crashes
-							let channelName = mseg.channel.name;
-							let guildName = mseg.guild.name;
-
-							if (mseg.guild == null || mseg.channel == null) {
-								channelName = "PRIV_MESSAGE";
-								guildName = "PRIV_MESSAGE";
+							let channelName = "PRIV_MESSAGE";
+							let guildName = "PRIV_MESSAGE";
+							if (mseg.guild != null || mseg.channel != null) {
+								channelName = mseg.channel.name;
+								guildName = mseg.guild.name;
 							};
 
 							// log
@@ -278,12 +277,11 @@ function getLevelStats(GD_level, mseg) {
 				};
 
 				// fix log crashes
-				let channelName = mseg.channel.name;
-				let guildName = mseg.guild.name;
-
-				if (mseg.guild == null || mseg.channel == null) {
-					channelName = "PRIV_MESSAGE";
-					guildName = "PRIV_MESSAGE";
+				let channelName = "PRIV_MESSAGE";
+				let guildName = "PRIV_MESSAGE";
+				if (mseg.guild != null || mseg.channel != null) {
+					channelName = mseg.channel.name;
+					guildName = mseg.guild.name;
 				};
 
 				// log
