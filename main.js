@@ -176,14 +176,17 @@ function getUserStats(GD_user, mseg) {
 							if (parseInt(COLOR2) > colors.count) COLOR2 = "3";
 
 							// fix log crashes
+							let channelName = mseg.channel.name;
+							let guildName = mseg.guild.name;
+
 							if (mseg.guild == null || mseg.channel == null) {
-								mseg.guild.name = "PRIV_MESSAGE";
-								mseg.channel.name = "PRIV_MESSAGE"
+								channelName = "PRIV_MESSAGE";
+								guildName = "PRIV_MESSAGE";
 							};
 
 							// log
 							console.log("User request by: " + mseg.author.username + " [" + mseg.author.id +
-								"] || " + mseg.guild.name + " [" + mseg.channel.name + "] || [" + GD_user + "]"
+								"] || " + guildName + " [" + channelName + "] || [" + GD_user + "]"
 							);
 
 							// sends to card generator
@@ -275,14 +278,17 @@ function getLevelStats(GD_level, mseg) {
 				};
 
 				// fix log crashes
+				let channelName = mseg.channel.name;
+				let guildName = mseg.guild.name;
+
 				if (mseg.guild == null || mseg.channel == null) {
-					mseg.guild.name = "PRIV_MESSAGE";
-					mseg.channel.name = "PRIV_MESSAGE"
+					channelName = "PRIV_MESSAGE";
+					guildName = "PRIV_MESSAGE";
 				};
 
 				// log
 				console.log("Level request by: " + mseg.author.username + " [" + mseg.author.id +
-					"] || " + mseg.guild.name + " [" + mseg.channel.name + "] || [" + GD_level + "]"
+					"] || " + guildName + " [" + channelName + "] || [" + GD_level + "]"
 				);
 
 				// send to card generator
