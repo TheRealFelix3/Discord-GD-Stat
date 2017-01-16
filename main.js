@@ -176,7 +176,7 @@ function getUserStats(GD_user, mseg) {
 							if (parseInt(COLOR2) > colors.count) COLOR2 = "3";
 
 							// fix log crashes
-							if (mseg.guild.name != null || mseg.channel.name != null) {
+							if (mseg.guild == null || mseg.channel == null) {
 								mseg.guild.name = "PRIV_MESSAGE";
 								mseg.channel.name = "PRIV_MESSAGE"
 							};
@@ -275,7 +275,7 @@ function getLevelStats(GD_level, mseg) {
 				};
 
 				// fix log crashes
-				if (mseg.guild.name != null || mseg.channel.name != null) {
+				if (mseg.guild == null || mseg.channel == null) {
 					mseg.guild.name = "PRIV_MESSAGE";
 					mseg.channel.name = "PRIV_MESSAGE"
 				};
