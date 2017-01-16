@@ -178,7 +178,7 @@ function getUserStats(GD_user, mseg) {
 							// fix log crashes
 							let channelName = "PRIV_MESSAGE";
 							let guildName = "PRIV_MESSAGE";
-							if (mseg.guild != null || mseg.channel != null) {
+							if (mseg.guild != null && mseg.channel != null) {
 								channelName = mseg.channel.name;
 								guildName = mseg.guild.name;
 							};
@@ -279,7 +279,7 @@ function getLevelStats(GD_level, mseg) {
 				// fix log crashes
 				let channelName = "PRIV_MESSAGE";
 				let guildName = "PRIV_MESSAGE";
-				if (mseg.guild != null || mseg.channel != null) {
+				if (mseg.guild != null && mseg.channel != null) {
 					channelName = mseg.channel.name;
 					guildName = mseg.guild.name;
 				};
