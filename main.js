@@ -1,19 +1,19 @@
 /*
-* ISC License
-* Copyright (c) 2016, Nexrem
-*
-* Permission to use, copy, modify, and/or distribute this software for any
-* purpose with or without fee is hereby granted, provided that the above
-* copyright notice and this permission notice appear in all copies.
-*
-* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-* REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-* AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-* INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-* LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * ISC License
+ * Copyright (c) 2016, Nexrem
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
 
 "use strict";
 var Discordie = require("discordie"); // discord API
@@ -49,7 +49,7 @@ client.Dispatcher.on("GATEWAY_READY", function(e) {
 });
 
 // ping self every 5 minutes
-setInterval( function() {
+setInterval(function() {
 	request.get(config["getTarget"]);
 }, 300000);
 
@@ -67,20 +67,20 @@ client.Dispatcher.on("MESSAGE_CREATE", function(e) {
 		if (messageCommand[0] == "stats" || messageCommand[0] == "player" || messageCommand[0] == "user") {
 
 			// check if not blank
-			if ( messageCommand.length > 1) {
-				let GD_user = messageContent.substr(messageCommand[0].length+1); // remove command and empty space after it
-				getUserStats( GD_user, e.message ); // pass to poller
+			if (messageCommand.length > 1) {
+				let GD_user = messageContent.substr(messageCommand[0].length + 1); // remove command and empty space after it
+				getUserStats(GD_user, e.message); // pass to poller
 			} else {
 				errorOut(5, e.message); // if blank error out
 			};
 		}
 		// check if level stats command
-		else if ( messageCommand[0] == "level" || messageCommand[0] == "userlevel" ) {
+		else if (messageCommand[0] == "level" || messageCommand[0] == "userlevel") {
 
 			// check if not blank
-			if ( messageCommand.length > 1 ) {
-				let GD_level = messageContent.substr(messageCommand[0].length+1); // remove command and empty space after it
-				getLevelStats( GD_level, e.message ); // pass to poller
+			if (messageCommand.length > 1) {
+				let GD_level = messageContent.substr(messageCommand[0].length + 1); // remove command and empty space after it
+				getLevelStats(GD_level, e.message); // pass to poller
 			} else {
 				errorOut(6, e.message); // if blank error out
 			};
@@ -142,7 +142,7 @@ function getUserStats(GD_user, mseg) {
 
 							let objectArray = formatData(body2.split("|")[0]);
 
-								// bind data values to variables
+							// bind data values to variables
 							let USERNAME = objectArray["1"];
 							let USERID = objectArray["2"];
 							let COINS = objectArray["13"];
@@ -174,6 +174,12 @@ function getUserStats(GD_user, mseg) {
 							if (parseInt(SPIDER) > icons.spider) SPIDER = "unknown";
 							if (parseInt(COLOR1) > colors.count) COLOR1 = "0";
 							if (parseInt(COLOR2) > colors.count) COLOR2 = "3";
+
+							// fix log crashes
+							if (mseg.guild.name != null || mseg.channel.name != null) {
+								mseg.guild.name = "PRIV_MESSAGE";
+								mseg.channel.name = "PRIV_MESSAGE"
+							};
 
 							// log
 							console.log("User request by: " + mseg.author.username + " [" + mseg.author.id +
@@ -258,7 +264,7 @@ function getLevelStats(GD_level, mseg) {
 					SONGAUTHOR = tracks[TRACKID][1]
 				} else {
 					let SONGARRAY = body.split("#")[2].split(":") // splits songs into array for later use
-						// iterate through songs and search for a matching songID
+					// iterate through songs and search for a matching songID
 					for (let i = 0; i < SONGARRAY.length; i++) {
 						if (SONGARRAY[i].split("~|~")[1] == SONGID) {
 							SONGNAME = SONGARRAY[i].split("~|~")[3]
@@ -268,11 +274,18 @@ function getLevelStats(GD_level, mseg) {
 					};
 				};
 
+				// fix log crashes
+				if (mseg.guild.name != null || mseg.channel.name != null) {
+					mseg.guild.name = "PRIV_MESSAGE";
+					mseg.channel.name = "PRIV_MESSAGE"
+				};
+
 				// log
 				console.log("Level request by: " + mseg.author.username + " [" + mseg.author.id +
-						"] || " + mseg.guild.name + " [" + mseg.channel.name + "] || [" + GD_level + "]"
-					)
-					// send to card generator
+					"] || " + mseg.guild.name + " [" + mseg.channel.name + "] || [" + GD_level + "]"
+				);
+
+				// send to card generator
 				generateLevelCard(mseg, LEVELID, LEVELNAME, LEVELDESC, AUTHORNAME, DIFFICULTY, DOWNLOADS, LIKES, DEMON, AUTO, STARS, FEATURED, LENGTH, SONGID, COINS, FEATUREDCOINS, SONGNAME, SONGAUTHOR);
 			};
 		});
@@ -447,7 +460,7 @@ var primaryR = 175
 var primaryG = 175
 var primaryB = 175
 var primaryFlux = 61
-	// secondary color variables
+// secondary color variables
 var secondaryR = 255
 var secondaryG = 255
 var secondaryB = 255
@@ -490,26 +503,26 @@ function addGlow(drawable, COL1, COL2) {
 	}
 
 	// create new image and add the glow width to height and width
-	var output = new Jimp(drawable.bitmap.width+glowWidth, drawable.bitmap.height+glowWidth, function (err, output) {
+	var output = new Jimp(drawable.bitmap.width + glowWidth, drawable.bitmap.height + glowWidth, function(err, output) {
 
 		output
-			.composite( drawable, glowWidth/2, glowWidth/2 ) //place the original drawable in the middle
-			.blur( glowWidth/4 ) //blur it (fast blur)
+			.composite(drawable, glowWidth / 2, glowWidth / 2) //place the original drawable in the middle
+			.blur(glowWidth / 4) //blur it (fast blur)
 
 			// iterate through all pixels
-			.scan(0, 0, output.bitmap.width, output.bitmap.height, function (x, y, idx) {
+			.scan(0, 0, output.bitmap.width, output.bitmap.height, function(x, y, idx) {
 
-				var alpha = this.bitmap.data[ idx + 3 ]; // get alpha
+				var alpha = this.bitmap.data[idx + 3]; // get alpha
 
 				// if alpha is more than 10 (0-255)
 				if (alpha > 10) {
-					this.bitmap.data[ idx + 0 ] = colors[COL2][0]; //replace pixel with color secondary color
-					this.bitmap.data[ idx + 1 ] = colors[COL2][1];
-					this.bitmap.data[ idx + 2 ] = colors[COL2][2];
-					this.bitmap.data[ idx + 3 ] = 255; //make pixel fuly opaque
+					this.bitmap.data[idx + 0] = colors[COL2][0]; //replace pixel with color secondary color
+					this.bitmap.data[idx + 1] = colors[COL2][1];
+					this.bitmap.data[idx + 2] = colors[COL2][2];
+					this.bitmap.data[idx + 3] = 255; //make pixel fuly opaque
 				}
 			})
-			.composite( drawable, glowWidth/2, glowWidth/2 ); // place original image over edited one.
+			.composite(drawable, glowWidth / 2, glowWidth / 2); // place original image over edited one.
 	});
 	return output; // return edited
 }
@@ -520,8 +533,8 @@ function formatData(data) {
 	let array = data.split(":") // split body into array
 	let objectArray = {} // blank object
 	// iterate through array and add to object
-	for (let i = 0; i <array.length; i=i+2) {
-		objectArray[array[i]] = array[i+1]
+	for (let i = 0; i < array.length; i = i + 2) {
+		objectArray[array[i]] = array[i + 1]
 	}
 	return objectArray
 }
