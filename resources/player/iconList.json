@@ -1,0 +1,9 @@
+{
+  "icon" : 1,
+  "ship" : 1,
+  "ball" : 1,
+  "wave" : 1,
+  "ufo"  : 1,
+  "robot": 1,
+  "spider":1
+}
