@@ -22,6 +22,6 @@
     "express": "^4.14.0",
     "jimp": "oliver-moran/jimp#pull/199/head",
     "plist": "^2.0.1",
-    "request": "^2.75.0"
+    "request": "^2.75.0",
   }
 }

@@ -326,14 +326,13 @@ function getLevelStats(GD_level, mseg) {
 
 // player card generator function
 function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, COL1, COL2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS, DIAMONDS) {
-
 	// reads all image data
 	Jimp.read("./resources/player/skeleton-player.png", function(err0, skeletonPlayer) {
 
 		// error handling
 		if (err0) {
 			errorOut(2, mseg);
-			console.log([err0]);
+			console.log(err0);
 			return; // stop function execution
 		} else {
 
@@ -346,67 +345,70 @@ function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, CO
 			if (parseInt(ROBOT) < 10) ROBOT = "0" + ROBOT;
 			if (parseInt(SPIDER) < 10) SPIDER = "0" + SPIDER;
 
-			// create new blank image and pump data and pass it to the sprite generator
-			let icon = new Jimp(200, 100, 0x00000000, function(err, image) {
-				image = makeSprite("player_" + ICON, COL1, COL2, image).resize(42, Jimp.AUTO);
-			});
-			let ship = new Jimp(200, 100, 0x00000000, function(err, image) {
-				image = makeSprite("ship_" + SHIP, COL1, COL2, image).resize(46, Jimp.AUTO);
-			});
-			let ball = new Jimp(200, 100, 0x00000000, function(err, image) {
-				image = makeSprite("player_ball_" + BALL, COL1, COL2, image).resize(42, Jimp.AUTO);
-			});
-			let ufo = new Jimp(200, 100, 0x00000000, function(err, image) {
-				image = makeSprite("bird_" + UFO, COL1, COL2, image).resize(48, Jimp.AUTO);
-			});
-			let wave = new Jimp(200, 100, 0x00000000, function(err, image) {
-				image = makeSprite("dart_" + DART, COL1, COL2, image).resize(42, Jimp.AUTO);
-			});
-			let robot = new Jimp(200, 100, 0x00000000, function(err, image) {
-				image = makeSprite("robot_" + ROBOT, COL1, COL2, image).resize(38, Jimp.AUTO);
-			});
-			let spider = new Jimp(200, 100, 0x00000000, function(err, image) {
-				image = makeSprite("spider_" + SPIDER, COL1, COL2, image).resize(50, Jimp.AUTO);
-			});
+			let icons = new Jimp(200, 100, 0x00000000, function(err, image) {
 
-			// if glow add glow
-			if (GLOW == "1") {
-				icon = addGlow(icon, COL1, COL2); // rebind after recolor
-				ship = addGlow(ship, COL1, COL2);
-				ball = addGlow(ball, COL1, COL2);
-				ufo = addGlow(ufo, COL1, COL2);
-				wave = addGlow(wave, COL1, COL2);
-				robot = addGlow(robot, COL1, COL2);
-				spider = addGlow(spider, COL1, COL2);
-			}
+				makeSprite("player_" + ICON, COL1, COL2, image.clone(), function(icon) {
+					makeSprite("ship_" + SHIP, COL1, COL2, image.clone(), function(ship) {
+						makeSprite("player_ball_" + BALL, COL1, COL2, image.clone(), function(ball) {
+							makeSprite("bird_" + UFO, COL1, COL2, image.clone(), function(ufo) {
+								makeSprite("dart_" + DART, COL1, COL2, image.clone(), function(wave) {
+									makeSprite("robot_" + ROBOT, COL1, COL2, image.clone(), function(robot) {
+										makeSprite("spider_" + SPIDER, COL1, COL2, image.clone(), function(spider) {
 
-			let outputfile = "./output/" + Math.random().toString(36).substr(2, 5) + ".png" // create a random name for the output file
+											icon.resize(42, Jimp.AUTO);
+											ship.resize(46, Jimp.AUTO);
+											ball.resize(42, Jimp.AUTO);
+											ufo.resize(48, Jimp.AUTO);
+											wave.resize(42, Jimp.AUTO);
+											robot.resize(38, Jimp.AUTO);
+											spider.resize(50, Jimp.AUTO);
 
-			//  overlay the changed drawables on top of our base.
-			skeletonPlayer
-				.composite(icon, 40, 64)
-				.composite(ship, 98, 70)
-				.composite(ball, 158, 64)
-				.composite(ufo, 216, 65)
-				.composite(wave, 282, 66)
-				.composite(robot, 338, 65)
-				.composite(spider, 388, 70)
-				.print(bigFont, 2, 2, USERNAME, 478, Jimp.ALIGN_FONT_CENTER) // print some text with a custom font.
-				.print(bigFont, 75, 117, STARS)
-				.print(bigFont, 246, 117, USERCOINS)
-				.print(bigFont, 393, 117, COINS)
-				.print(bigFont, 75, 156, DIAMONDS)
-				.print(bigFont, 246, 156, DEMONS)
-				.print(bigFont, 393, 156, CREATORPOINTS)
-				// write file
-				.write(outputfile, function() {
-					// upload file
-					mseg.channel.uploadFile(outputfile).then(function() {
-						// delete file
-						fs.unlink(outputfile);
-						console.log("SUCCESS: " + USERNAME);
+											// if glow add glow
+											if (GLOW == "1") {
+												icon = addGlow(icon, COL1, COL2); // rebind after recolor
+												ship = addGlow(ship, COL1, COL2);
+												ball = addGlow(ball, COL1, COL2);
+												ufo = addGlow(ufo, COL1, COL2);
+												wave = addGlow(wave, COL1, COL2);
+												robot = addGlow(robot, COL1, COL2);
+												spider = addGlow(spider, COL1, COL2);
+											}
+
+											let outputfile = "./output/" + Math.random().toString(36).substr(2, 5) + ".png" // create a random name for the output file
+
+											//  overlay the changed drawables on top of our base.
+											skeletonPlayer
+												.composite(icon, 40, 64)
+												.composite(ship, 98, 70)
+												.composite(ball, 158, 64)
+												.composite(ufo, 216, 65)
+												.composite(wave, 282, 66)
+												.composite(robot, 338, 65)
+												.composite(spider, 388, 70)
+												.print(bigFont, 2, 2, USERNAME, 478, Jimp.ALIGN_FONT_CENTER) // print some text with a custom font.
+												.print(bigFont, 75, 117, STARS)
+												.print(bigFont, 246, 117, USERCOINS)
+												.print(bigFont, 393, 117, COINS)
+												.print(bigFont, 75, 156, DIAMONDS)
+												.print(bigFont, 246, 156, DEMONS)
+												.print(bigFont, 393, 156, CREATORPOINTS)
+												// write file
+												.write(outputfile, function() {
+													// upload file
+													mseg.channel.uploadFile(outputfile).then(function() {
+													// delete file
+													fs.unlink(outputfile);
+													console.log("SUCCESS: " + USERNAME);
+													});
+												});
+										});
+									});
+								});
+							});
+						});
 					});
 				});
+			});
 		};
 	});
 }
@@ -592,158 +594,164 @@ function initExpress() {
 };
 
 // sprite compositor. Spits out colored sprite
-function makeSprite(selected, COL1, COL2, image) {
+function makeSprite(selected, COL1, COL2, image, cb) {
 
-	let items = icons.filter(family, selected).reverse(); // flip the array. Main layer last
+	let spritePromise = new Promise(function(resolve, reject) {
+		let items = icons.filter(family, selected).reverse(); // flip the array. Main layer last
 
-	// moves legs to end of array. Done to be drawn last.
-	let legs = items.filter(findLegs, selected); // use a filter to find legs of currently selected sprite
-	// skip if 0
-	if (legs.length != 0) {
-		legs.forEach(element => {
-			items.splice(items.indexOf(element), 1); // remove legs from array
-		});
-		items = items.concat(legs); // add legs to end of array.
-	};
-	// for spider. Find the first leg and replicate it twice for back legs
-	let firstLeg = items.filter(findFirstLeg, selected).reverse(); // use filter to find first leg. Flip array. Legs go behind everything
-	if (firstLeg.length != 0) {
-		firstLeg.forEach(element => {
-			items.unshift(element.replace("001", "002")); // place in begining of array. ( back layer )
-			items.unshift(element.replace("001", "003")); // use different ID for compositor
-		});
-	};
-	// for robot. Find middle leg. Push to back.
-	let middleLeg = items.filter(findMiddleLeg, selected).reverse();
-	if (middleLeg.length != 0) {
-		middleLeg.forEach(element => {
-			items.splice(items.indexOf(element), 1);
-			items.unshift(element);
-		});
-	};
-	// find last leg. Push to back
-	let lastLeg = items.filter(findLastLeg, selected).reverse();
-	if (lastLeg.length != 0) {
-		lastLeg.forEach(element => {
-			items.splice(items.indexOf(element), 1);
-			items.unshift(element);
-		});
-	};
-
-	// check if extra image exists if so push extra to the end of array
-	let extra = items.filter(findExtra);
-	if (extra.length != 0) {
-		extra.forEach(element => {
-			items.splice(items.indexOf(element), 1);
-		});
-		items = items.concat(extra); // combine arrays
-	};
-
-	// for each part of the sprite
-	items.forEach((element, i) => {
-		let z = spritesheet.clone(); // clone the spritesheet
-
-		let original = element; // for edits
-		element = element.replace("002", "001").replace("003", "001"); // fix IDs for proper parsing
-
-		let x = transform(sheetData[element].textureRect)[0][0]; // get X coord
-		let y = transform(sheetData[element].textureRect)[0][1]; // get Y coord
-
-		let sw = transform(sheetData[element].spriteSize)[0]; // get size
-		let sh = transform(sheetData[element].spriteSize)[1]; // get height
-
-		let ox = transform(sheetData[element].spriteOffset)[0]; // get offsetX
-		let oy = transform(sheetData[element].spriteOffset)[1]; // get offsetY
-
-		let w; // placeholder real width
-		let h; // placeholder real height
-		// rotation handling. Flips width and height.
-		if (sheetData[element].textureRotated) {
-			h = transform(sheetData[element].textureRect)[1][0];
-			w = transform(sheetData[element].textureRect)[1][1];
-		} else {
-			w = transform(sheetData[element].textureRect)[1][0];
-			h = transform(sheetData[element].textureRect)[1][1];
+		// moves legs to end of array. Done to be drawn last.
+		let legs = items.filter(findLegs, selected); // use a filter to find legs of currently selected sprite
+		// skip if 0
+		if (legs.length != 0) {
+			legs.forEach(element => {
+				items.splice(items.indexOf(element), 1); // remove legs from array
+			});
+			items = items.concat(legs); // add legs to end of array.
+		};
+		// for spider. Find the first leg and replicate it twice for back legs
+		let firstLeg = items.filter(findFirstLeg, selected).reverse(); // use filter to find first leg. Flip array. Legs go behind everything
+		if (firstLeg.length != 0) {
+			firstLeg.forEach(element => {
+				items.unshift(element.replace("001", "002")); // place in begining of array. ( back layer )
+				items.unshift(element.replace("001", "003")); // use different ID for compositor
+			});
+		};
+		// for robot. Find middle leg. Push to back.
+		let middleLeg = items.filter(findMiddleLeg, selected).reverse();
+		if (middleLeg.length != 0) {
+			middleLeg.forEach(element => {
+				items.splice(items.indexOf(element), 1);
+				items.unshift(element);
+			});
+		};
+		// find last leg. Push to back
+		let lastLeg = items.filter(findLastLeg, selected).reverse();
+		if (lastLeg.length != 0) {
+			lastLeg.forEach(element => {
+				items.splice(items.indexOf(element), 1);
+				items.unshift(element);
+			});
 		};
 
-		z.crop(x, y, w, h); // crop the image from the spritesheet
-
-		// rotate cropped part
-		if (sheetData[element].textureRotated) {
-			z.rotate(-90);
-		};
-		// if back leg reduce brightness
-		if (original.includes("002") || original.includes("003")) {
-			z.brightness(-0.5);
+		// check if extra image exists if so push extra to the end of array
+		let extra = items.filter(findExtra);
+		if (extra.length != 0) {
+			extra.forEach(element => {
+				items.splice(items.indexOf(element), 1);
+			});
+			items = items.concat(extra); // combine arrays
 		};
 
-		// if secondary object color as secondary.
-		if (element.includes("_2_001")) {
-			reColor(z, colors[COL2]);
-		// if primary object color as primary.
-		} else if (!element.includes("_extra_") && !element.includes("_3_001")) {
-			reColor(z, colors[COL1]);
-		};
+		// for each part of the sprite
+		items.forEach((element, i) => {
+			let z = spritesheet.clone(); // clone the spritesheet
 
-		// resize to true size. (sprite size)
-		z.resize(sw, sh);
+			let original = element; // for edits
+			element = element.replace("002", "001").replace("003", "001"); // fix IDs for proper parsing
 
-		// leg offset handling robot
-		if (element.includes(selected + "_02_") && element.includes("robot_")) {
-			ox = ox - 20 * textureScaleFactor;
-			oy = oy - 10 * textureScaleFactor;
-			z.rotate(45);
-		} else if (element.includes(selected + "_03_") && element.includes("robot_")) {
-			ox = ox - 15 * textureScaleFactor;
-			oy = oy - 30 * textureScaleFactor;
-			z.rotate(-45);
-		} else if (element.includes(selected + "_04_") && element.includes("robot_")) {
-			ox = ox;
-			oy = oy - 32 * textureScaleFactor;
-		};
+			let x = transform(sheetData[element].textureRect)[0][0]; // get X coord
+			let y = transform(sheetData[element].textureRect)[0][1]; // get Y coord
 
-		// leg offset handling spider
-		if (element.includes(selected + "_02_") && element.includes("spider_") && original.includes("002")) {
-			ox = ox + 9 * textureScaleFactor;
-			oy = oy - 19 * textureScaleFactor;
-		} else if (element.includes(selected + "_02_") && element.includes("spider_") && original.includes("003")) {
-			ox = ox + 29 * textureScaleFactor;
-			oy = oy - 19 * textureScaleFactor;
-			z.flip(true, false);
-		} else if (element.includes(selected + "_02_") && element.includes("spider_")) {
-			ox = ox - 8 * textureScaleFactor;
-			oy = oy - 19 * textureScaleFactor;
-		} else if (element.includes(selected + "_03_") && element.includes("spider_")) {
-			ox = ox - 43 * textureScaleFactor;
-			oy = oy - 19 * textureScaleFactor;
+			let sw = transform(sheetData[element].spriteSize)[0]; // get size
+			let sh = transform(sheetData[element].spriteSize)[1]; // get height
 
-			// crap spider is crap. Hardcoding Ik Ik. I dislike it too.
-			if (selected == "spider_07") {
-				ox = ox + 10 * textureScaleFactor;
-				oy = oy + 8 * textureScaleFactor;
-			}
-			// crap layer 2 handling. (details on spider legs and such)
-			if (h < 11 * textureScaleFactor) {
-				ox = ox + 10 * textureScaleFactor;
-			} else if (h < 20 * textureScaleFactor && w < 14 * textureScaleFactor) {
-				ox = ox + 9 * textureScaleFactor;
-				oy = oy - 4 * textureScaleFactor;
+			let ox = transform(sheetData[element].spriteOffset)[0]; // get offsetX
+			let oy = transform(sheetData[element].spriteOffset)[1]; // get offsetY
+
+			let w; // placeholder real width
+			let h; // placeholder real height
+			// rotation handling. Flips width and height.
+			if (sheetData[element].textureRotated) {
+				h = transform(sheetData[element].textureRect)[1][0];
+				w = transform(sheetData[element].textureRect)[1][1];
+			} else {
+				w = transform(sheetData[element].textureRect)[1][0];
+				h = transform(sheetData[element].textureRect)[1][1];
 			};
-			z.rotate(45);
-		// 4th robot leg
-		} else if (element.includes(selected + "_04_") && element.includes("spider_")) {
-			ox = ox - 15 * textureScaleFactor;
-			oy = oy - 10 * textureScaleFactor;
-		};
 
-		// devide by two to (center of sprite)
-		let px = sw / 2;
-		let py = sh / 2;
+			z.crop(x, y, w, h); // crop the image from the spritesheet
 
-		// composite part on image.
-		image.composite(z, 100 - px + ox, 50 - py - oy);
+			// rotate cropped part
+			if (sheetData[element].textureRotated) {
+				z.rotate(-90);
+			};
+			// if back leg reduce brightness
+			if (original.includes("002") || original.includes("003")) {
+				z.brightness(-0.5);
+			};
+
+			// if secondary object color as secondary.
+			if (element.includes("_2_001")) {
+				reColor(z, colors[COL2]);
+				// if primary object color as primary.
+			} else if (!element.includes("_extra_") && !element.includes("_3_001")) {
+				reColor(z, colors[COL1]);
+			};
+
+			// resize to true size. (sprite size)
+			z.resize(sw, sh);
+
+			// leg offset handling robot
+			if (element.includes(selected + "_02_") && element.includes("robot_")) {
+				ox = ox - 20 * textureScaleFactor;
+				oy = oy - 10 * textureScaleFactor;
+				z.rotate(45);
+			} else if (element.includes(selected + "_03_") && element.includes("robot_")) {
+				ox = ox - 15 * textureScaleFactor;
+				oy = oy - 30 * textureScaleFactor;
+				z.rotate(-45);
+			} else if (element.includes(selected + "_04_") && element.includes("robot_")) {
+				ox = ox;
+				oy = oy - 32 * textureScaleFactor;
+			};
+
+			// leg offset handling spider
+			if (element.includes(selected + "_02_") && element.includes("spider_") && original.includes("002")) {
+				ox = ox + 9 * textureScaleFactor;
+				oy = oy - 19 * textureScaleFactor;
+			} else if (element.includes(selected + "_02_") && element.includes("spider_") && original.includes("003")) {
+				ox = ox + 29 * textureScaleFactor;
+				oy = oy - 19 * textureScaleFactor;
+				z.flip(true, false);
+			} else if (element.includes(selected + "_02_") && element.includes("spider_")) {
+				ox = ox - 8 * textureScaleFactor;
+				oy = oy - 19 * textureScaleFactor;
+			} else if (element.includes(selected + "_03_") && element.includes("spider_")) {
+				ox = ox - 43 * textureScaleFactor;
+				oy = oy - 19 * textureScaleFactor;
+
+				// crap spider is crap. Hardcoding Ik Ik. I dislike it too.
+				if (selected == "spider_07") {
+					ox = ox + 10 * textureScaleFactor;
+					oy = oy + 8 * textureScaleFactor;
+				}
+				// crap layer 2 handling. (details on spider legs and such)
+				if (h < 11 * textureScaleFactor) {
+					ox = ox + 10 * textureScaleFactor;
+				} else if (h < 20 * textureScaleFactor && w < 14 * textureScaleFactor) {
+					ox = ox + 9 * textureScaleFactor;
+					oy = oy - 4 * textureScaleFactor;
+				};
+				z.rotate(45);
+				// 4th robot leg
+			} else if (element.includes(selected + "_04_") && element.includes("spider_")) {
+				ox = ox - 15 * textureScaleFactor;
+				oy = oy - 10 * textureScaleFactor;
+			};
+
+			// devide by two to (center of sprite)
+			let px = sw / 2;
+			let py = sh / 2;
+
+			// composite part on image.
+			image.composite(z, 100 - px + ox, 50 - py - oy);
+		});
+		resolve({image, cb});
 	});
-	return image.autocrop(); // return finished image after autocrop (remove blank space)
+
+	spritePromise.then(function(response) {
+		response.cb(response.image.autocrop());
+	});
 };
 // filter out glow
 function removeGlow(value) {
