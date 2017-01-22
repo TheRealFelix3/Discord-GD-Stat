@@ -37,6 +37,7 @@ var loading = true; // indicates loading state;
 var config = JSON.parse(fs.readFileSync("./config.json", "utf8")); // parse config file
 var colors = JSON.parse(fs.readFileSync("./resources/player/colors.json", "utf8")); // parse color storage file
 var tracks = JSON.parse(fs.readFileSync("./resources/level/tracks.json", "utf8")); // parse audio tracks file
+var iconList = JSON.parse(fs.readFileSync("./resources/player/iconList.json", "utf8"));
 var sheetData = plist.parse(fs.readFileSync("./resources/player/player-spritesheet.plist", "utf8")).frames;
 var icons = Object.keys(sheetData).filter(removeGlow); // get all icon names and filter
 
@@ -57,7 +58,6 @@ Jimp.read("./resources/player/player-spritesheet.png", function(err1, image1) {
 				bigFontYellow = font3;
 				Jimp.loadFont(Jimp.FONT_SANS_32_WHITE, function(err5, font4) {
 					descriptionFont = font4
-					loading = false;
 					if (err1 || err2 || err3 || err4 || err5) console.log([err1, err2, err3, err4, err5]);
 					console.log("Finished initialization!");
 				});
@@ -88,7 +88,7 @@ setInterval(function() {
 
 client.Dispatcher.on("MESSAGE_CREATE", function(e) {
 	// checks if message starts with the command prefix.
-	if (e.message.content.substring(0, config.command_prefix.length) == config.command_prefix && !loading) {
+	if (e.message.content.substring(0, config.command_prefix.length) == config.command_prefix) {
 		let messageContent = e.message.content.substr(config.command_prefix.length); // remove the prefix from the message
 		let messageCommand = messageContent.toLowerCase().split(" "); // split into array at space
 
@@ -399,7 +399,7 @@ function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, CO
 				.print(bigFont, 246, 156, DEMONS)
 				.print(bigFont, 393, 156, CREATORPOINTS)
 				// write file
-				.write("out.png", function() {
+				.write(outputfile, function() {
 					// upload file
 					mseg.channel.uploadFile(outputfile).then(function() {
 						// delete file

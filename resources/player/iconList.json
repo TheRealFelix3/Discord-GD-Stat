@@ -1,9 +1,9 @@
 {
-  "icon" : 1,
-  "ship" : 1,
-  "ball" : 1,
-  "wave" : 1,
-  "ufo"  : 1,
-  "robot": 1,
-  "spider":1
+  "icon" : 108,
+  "ship" : 35,
+  "ball" : 29,
+  "wave" : 23,
+  "ufo"  : 28,
+  "robot": 17,
+  "spider":10
 }
