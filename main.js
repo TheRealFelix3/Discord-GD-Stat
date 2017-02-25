@@ -15,7 +15,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+
 "use strict";
+const INTEST = false;
+
+
 var Discordie = require("discordie"); // discord API
 var fs = require("fs"); // Node filesystem
 var express = require('express'); // require express API for network stuffs
@@ -24,10 +28,10 @@ var plist = require("plist"); // plist parser
 var Jimp = require("jimp"); // image manipulator
 
 var client = new Discordie(); // creates new bot instance
-var app = express(); // creates new express app instance
+if(INTEST === false) var app = express(); // creates new express app instance
 
 var port = process.env.PORT || 8080; // assign port. if no port given use localhost
-initExpress(); // initializes express port listening
+if(INTEST === false) initExpress(); // initializes express port listening
 
 
 //////////////////////////////////// INIT //////////////////////////////////////
@@ -78,10 +82,12 @@ client.Dispatcher.on("GATEWAY_READY", function(e) {
 	client.User.setUsername(config.name); // username
 });
 
+if(INTEST === false) {
 // ping self every 5 minutes
 setInterval(function() {
 	request.get(config["getTarget"]);
 }, 300000);
+}
 
 
 //////////////////////////////// RUNTIME ///////////////////////////////////////
@@ -113,7 +119,7 @@ client.Dispatcher.on("MESSAGE_CREATE", function(e) {
 			} else {
 				errorOut(6, e.message); // if blank error out
 			};
-		};
+		}
 	};
 });
 
@@ -227,7 +233,7 @@ function getUserStats(GD_user, mseg) {
 };
 
 // gets level stats from server
-function getLevelStats(GD_level, mseg) {
+function getLevelStats(GD_level, mseg, daily) {
 
 	//////////// FIRST REQUEST
 	// post request to the boomlings server
@@ -261,6 +267,7 @@ function getLevelStats(GD_level, mseg) {
 				let LEVELNAME = objectArray["2"]
 				let AUTHORID = objectArray["6"]
 				let DIFFICULTY = objectArray["9"]
+				let DEMONDIFF = objectArray["43"]
 				let DOWNLOADS = objectArray["10"]
 				let TRACKID = objectArray["12"]
 				let LIKES = objectArray["14"]
@@ -268,6 +275,7 @@ function getLevelStats(GD_level, mseg) {
 				let AUTO = objectArray["25"]
 				let STARS = objectArray["18"]
 				let FEATURED = objectArray["19"]
+				let EPIC = objectArray["42"]
 				let z = new Buffer(objectArray["3"], 'base64')
 				let LEVELDESC = z.toString()
 				let LENGTH = objectArray["15"]
@@ -293,6 +301,11 @@ function getLevelStats(GD_level, mseg) {
 				if (SONGID == "0") {
 					SONGNAME = tracks[TRACKID][0]
 					SONGAUTHOR = tracks[TRACKID][1]
+
+					if(parseInt(TRACKID) > 34) {
+						SONGNAME = tracks["+"][0]
+						SONGAUTHOR = tracks["+"][1];
+					}
 				} else {
 					let SONGARRAY = body.split("#")[2].split(":") // splits songs into array for later use
 					// iterate through songs and search for a matching songID
@@ -319,7 +332,7 @@ function getLevelStats(GD_level, mseg) {
 				);
 
 				// send to card generator
-				generateLevelCard(mseg, LEVELID, LEVELNAME, LEVELDESC, AUTHORNAME, DIFFICULTY, DOWNLOADS, LIKES, DEMON, AUTO, STARS, FEATURED, LENGTH, SONGID, COINS, FEATUREDCOINS, SONGNAME, SONGAUTHOR);
+				generateLevelCard(mseg, LEVELID, LEVELNAME, LEVELDESC, AUTHORNAME, DIFFICULTY, DOWNLOADS, LIKES, DEMON, AUTO, STARS, FEATURED, LENGTH, SONGID, COINS, FEATUREDCOINS, SONGNAME, SONGAUTHOR, EPIC, DEMONDIFF, (daily || false));
 			};
 		});
 };
@@ -415,74 +428,137 @@ function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, CO
 
 var levelLengths = ["Tiny", "Short", "Medium", "Long", "XL"] // Array containing level lenght values
 
-function generateLevelCard(mseg, LEVELID, LEVELNAME, LEVELDESC, AUTHORNAME, DIFFICULTY, DOWNLOADS, LIKES, DEMON, AUTO, STARS, FEATURED, LENGTH, SONGID, COINS, FEATUREDCOINS, SONGNAME, SONGAUTHOR) {
+function generateLevelCard(mseg, LEVELID, LEVELNAME, LEVELDESC, AUTHORNAME, DIFFICULTY, DOWNLOADS, LIKES, DEMON, AUTO, STARS, FEATURED, LENGTH, SONGID, COINS, FEATUREDCOINS, SONGNAME, SONGAUTHOR, EPIC, DEMONDIFF, DAILY) {
 
 	// load in all images we need
 	Jimp.read("./resources/level/skeleton-level.png", function(err1, skeletonLevel) {
 		Jimp.read("./resources/level/difficulties.png", function(err2, difficulties) {
-			Jimp.read("./resources/level/levelCoins.png", function(err3, levelCoins) {
+			Jimp.read("./resources/level/demonDifficulties.png", function(err2, demondiffs) {
+				Jimp.read("./resources/level/featuredCoin.png", function(err2, fCoin) {
+					Jimp.read("./resources/level/epicCoin.png", function(err2, eCoin) {
+						Jimp.read("./resources/level/levelCoins.png", function(err3, levelCoins) {
 
-				// error handling
-				if (err1 || err2 || err3) {
-					errorOut(2, mseg);
-					console.log([err1, err2, err3]);
-					return; // stop function execution
-				} else {
+							// error handling
+							if (err1 || err2 || err3) {
+								errorOut(2, mseg);
+								console.log([err1, err2, err3]);
+								return; // stop function execution
+							} else {
 
-					let outputfile = "./output/" + Math.random().toString(36).substr(2, 5) + ".png" // create a random name for the output file
+								let outputfile = "./output/" + Math.random().toString(36).substr(2, 5) + ".png" // create a random name for the output file
+								let demonornormal = difficulties;
+								let demon         = false;
+								let diffOffsets   = [0,0];
+								let eCoinOffsets  = [0,0];
+								let fCoinOffsets  = [0,0];
+								fCoinOffsets[0] = -5;
+								fCoinOffsets[1] = -17.5;
+								eCoinOffsets[0] = -5;
+								eCoinOffsets[1] = -25;
+								// Difficulty handler
+								if (DEMON == "1") {
+									// Handle positions
 
-					// Difficulty handler
-					if (DEMON == "1") {
-						difficulties.crop(0, 517, 86, 86); // if demon use demon
-					} else if (AUTO == "1") {
-						difficulties.crop(0, 604, 86, 86); // if auto use auto
-					} else {
-						difficulties.crop(0, (parseInt(DIFFICULTY) / 10) * 86, 86, 86); // else use other
-					};
+									eCoinOffsets[0] = -12 + 14.75;    // epic border offsetx
+									eCoinOffsets[1] = -22.5 + 16.5;   // epic border offsety
+									fCoinOffsets[0] = 2.5;            // featured border offsetx
+									fCoinOffsets[1] = 2;              // featured border offsety
+									diffOffsets[0] = -5 + 15;         // difficulty offsetx
+									diffOffsets[1] = -22 + 15;        // difficulty offsety
 
-					// coins handler
-					if (FEATUREDCOINS == "1") {
-						levelCoins.crop(0, 0, 41, 41); // if featured coin use apropriate image
-					} else {
-						levelCoins.crop(0, 41, 41, 41); // if not use other image
-					};
-					// draw X ammount of coins
-					for (let i = 0; i < parseInt(COINS); i++) {
-						if (i > 2) {
-							break;
-						} // break if too much coins
-						skeletonLevel.composite(levelCoins, 425 + (i * 25), 95);
-					}
+									// Demon difficulties
+									if (DEMONDIFF == "3") { 
+										demondiffs.crop(72, 0, 72, 106); // easy demon
+									} else if (DEMONDIFF == "4") {
+										demondiffs.crop(144, 0, 82, 106); //medium demon
+										fCoinOffsets[0] += 4;
+										eCoinOffsets[0] += 5;
+									} else if (DEMONDIFF == "0") {
+										demondiffs.crop(0, 0, 72, 108); //hard demon
+										fCoinOffsets[1] += 1.5;
+									} else if (DEMONDIFF == "5") {
+										demondiffs.crop(226, 0, 76, 108); //insane demon
+										fCoinOffsets[0] += 1.5;
+										fCoinOffsets[1] += 1;
+										eCoinOffsets[0] += 2;
+									} else if (DEMONDIFF == "6") {
+										demondiffs.crop(302, 0, 98, 110); //extreme demon
+										diffOffsets[0] = -5;
+										fCoinOffsets[0] += 13;
+										fCoinOffsets[1] += 3;
+										eCoinOffsets[0] += 13;
+										eCoinOffsets[1] += 3;
+									}
+									demondiffs.resize(demondiffs.bitmap.width - 15, demondiffs.bitmap.height - 15);
+									demonornormal = demondiffs;
+									demon = true;
+								} else if (AUTO == "1") {
+									difficulties.crop(0, 604, 86, 86); // if auto use auto
+								} else {
+									difficulties.crop(0, (parseInt(DIFFICULTY) / 10) * 86, 86, 86); // else use other
+								};
 
-					// featured handler
-					if (parseInt(FEATURED) > 0) {
-						skeletonLevel.print(bigFontYellow, 655, 58, STARS); // if featured draw the stars count in yellow
-					} else {
-						skeletonLevel.print(bigFont, 655, 58, STARS); // if not in white
-					}
+								// coins handler
+								if (FEATUREDCOINS == "1") {
+									levelCoins.crop(0, 0, 41, 41); // if featured coin use apropriate image
+								} else {
+									levelCoins.crop(0, 41, 41, 41); // if not use other image
+								};
+								// draw X ammount of coins
+								for (let i = 0; i < parseInt(COINS); i++) {
+									if (i > 2) {
+										break;
+									} // break if too much coins
+									skeletonLevel.composite(levelCoins, 425 + (i * 25), 95);
+								}
 
-					// composes image
-					skeletonLevel
-						.print(bigFontHD, 10, -6, LEVELNAME)
-						.print(bigFontYellow, 10, 50, "by " + AUTHORNAME)
-						.print(bigFont, 5, 113, LEVELID)
-						.print(bigFont, 235, 80, LIKES)
-						.print(bigFont, 235, 114, DOWNLOADS)
-						.print(bigFont, 655, 103, levelLengths[parseInt(LENGTH)])
-						.print(descriptionFont, 48, 155, LEVELDESC, 790)
-						.print(bigFont, 55, 325, SONGNAME)
-						.print(bigFontYellow, 55, 360, "by " + SONGAUTHOR)
-						.composite(difficulties, 525, 58)
-						// write file
-						.write(outputfile, function() {
-							// upload file
-							mseg.channel.uploadFile(outputfile).then(function() {
-								// delete file
-								fs.unlink(outputfile);
-								console.log("SUCCESS: " + LEVELNAME + "[" + LEVELID + "]")
-							});
+								// featured handler
+								if (parseInt(FEATURED) > 0) {
+									skeletonLevel.print(bigFontYellow, 655, 58, STARS); // if featured draw the stars count in yellow
+									if(demon === true) {
+										fCoin.resize(fCoin.bitmap.width - 15, fCoin.bitmap.height - 15);
+										skeletonLevel.composite(fCoin, 525 + diffOffsets[0] + fCoinOffsets[0] - 15, 58 + diffOffsets[1]  + fCoinOffsets[1] - 15);
+									} else {
+										skeletonLevel.composite(fCoin, 525 + diffOffsets[0] + fCoinOffsets[0], 58 + diffOffsets[1]  + fCoinOffsets[1]);
+									}
+								} else {
+									skeletonLevel.print(bigFont, 655, 58, STARS); // if not in white
+								}
+
+								if (parseInt(EPIC) > 0) {
+									if(demon===true) {
+										eCoin.resize(eCoin.bitmap.width-15,eCoin.bitmap.height-15);
+										skeletonLevel.composite(eCoin, 525 + diffOffsets[0] + eCoinOffsets[0] - 15, 58 + diffOffsets[1]  + eCoinOffsets[1] - 15);
+									} else {
+										skeletonLevel.composite(eCoin, 525 + diffOffsets[0] + eCoinOffsets[0], 58 + diffOffsets[1]  + eCoinOffsets[1]);
+									}
+								}
+
+								// composes image
+								skeletonLevel
+									.print(bigFontHD, 10, -6, LEVELNAME)
+									.print(bigFontYellow, 10, 50, "by " + AUTHORNAME + (DAILY === true ? " (Daily)" : ""))
+									.print(bigFont, 5, 113, LEVELID)
+									.print(bigFont, 235, 80, LIKES)
+									.print(bigFont, 235, 114, DOWNLOADS)
+									.print(bigFont, 655, 103, levelLengths[parseInt(LENGTH)])
+									.print(descriptionFont, 48, 155, LEVELDESC, 790)
+									.print(bigFont, 55, 325, SONGNAME)
+									.print(bigFontYellow, 55, 360, "by " + SONGAUTHOR)
+									.composite(demonornormal, 525 + diffOffsets[0], 58 + diffOffsets[1])
+									// write file
+									.write(outputfile, function() {
+										// upload file
+										mseg.channel.uploadFile(outputfile).then(function() {
+											// delete file
+											fs.unlink(outputfile);
+											console.log("SUCCESS: " + LEVELNAME + "[" + LEVELID + "]")
+										});
+									});
+							};
 						});
-				};
+					});
+				});
 			});
 		});
 	});
