@@ -17,7 +17,7 @@
 
 
 "use strict";
-const INTEST = false;
+const INTEST = true;
 
 
 var Discordie = require("discordie"); // discord API
@@ -61,28 +61,28 @@ var bigFontYellow // placeholder
 var descriptionFont // placeholder
 var levelSheet; // placeholder
 
-var levelCoins,      //  
-	demondiffs,      //  v v v v v v
-	difficulties,    //  placeholder
-	fCoin,           //  ^ ^ ^ ^ ^ ^
-	eCoin,           //  
-	skeletonLevel;   //  
+var _levelCoins,      //  
+	_demondiffs,      //  v v v v v v
+	_difficulties,    //  placeholder
+	_fCoin,           //  ^ ^ ^ ^ ^ ^
+	_eCoin,           //  
+	_skeletonLevel;   //  
 
 function loadLevelSheet(lsheet) {
 	levelSheet    = lsheet;
-	levelCoins    = levelSheet.clone().crop(86,400+(98+98),41,82);
-	demondiffs    = levelSheet.clone().crop(86,0,110,400).rotate(90);
-	difficulties  = levelSheet.clone().crop(0,0,86,689);
-	fCoin         = levelSheet.clone().crop(86,400+98,96,98);
-	eCoin         = levelSheet.clone().crop(86,400,96,98);
-	skeletonLevel = levelSheet.clone().crop(86+110,0,400,800).rotate(90);
+	_levelCoins    = levelSheet.clone().crop(86,400+(98+98),41,82);
+	_demondiffs    = levelSheet.clone().crop(86,0,110,400).rotate(90);
+	_difficulties  = levelSheet.clone().crop(0,0,86,689);
+	_fCoin         = levelSheet.clone().crop(86,400+98,96,98);
+	_eCoin         = levelSheet.clone().crop(86,400,96,98);
+	_skeletonLevel = levelSheet.clone().crop(86+110,0,400,800).rotate(90);
 	return {levelSheet,
-			levelCoins,
-			demondiffs,
-			difficulties,
-			fCoin,
-			eCoin,
-			skeletonLevel};
+			_levelCoins,
+			_demondiffs,
+			_difficulties,
+			_fCoin,
+			_eCoin,
+			_skeletonLevel};
 }
 // load all static images and bind them to global vars. We never change these.
 Jimp.read("./resources/player/player-spritesheet.png", function(err1, image1) {
@@ -603,6 +603,13 @@ function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, CO
 var levelLengths = ["Tiny", "Short", "Medium", "Long", "XL"] // Array containing level lenght values
 
 function generateLevelCard(mseg, LEVELID, LEVELNAME, LEVELDESC, AUTHORNAME, DIFFICULTY, DOWNLOADS, LIKES, DEMON, AUTO, STARS, FEATURED, LENGTH, SONGID, COINS, FEATUREDCOINS, SONGNAME, SONGAUTHOR, EPIC, DEMONDIFF, DAILY) {
+	let levelCoins    = _levelCoins   .clone();
+	let demondiffs    = _demondiffs   .clone();
+	let difficulties  = _difficulties .clone();
+	let fCoin         = _fCoin        .clone();
+	let eCoin         = _eCoin        .clone();
+	let skeletonLevel = _skeletonLevel.clone();
+
 	delete require.cache[path.resolve("./resources/level/positions.json")]; // delete require cache
 	positions = require("./resources/level/positions.json");
 
