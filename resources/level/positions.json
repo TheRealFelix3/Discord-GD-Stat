@@ -1,0 +1,76 @@
+{
+    "featureCoin": {
+        "default": {
+            "offsets": [-5,-17.5],
+            "additionalSize": []
+        },
+        "demon": {
+            "default": {
+                "offsets": [2.5, 2],
+                "additionalSize": []
+            },
+            "easy": {
+                "offsets": [-2,-2.5],
+                "additionalSize": [-2.5,-2.5]
+            },
+            "medium": {
+                "offsets": [3.5,-2.5],
+                "additionalSize": [-2.5,-2.5]
+            },
+            "hard": {
+                "offsets": [1.5],
+                "additionalSize": []
+            },
+            "insane": {
+                "offsets": [-1,-1],
+                "additionalSize": []
+            },
+            "extreme": {
+                "offsets": [10,1],
+                "additionalSize": []
+            }
+        }
+    },
+    "epicCoin": {
+        "default": {
+            "offsets": [-5,-22.5],
+            "additionalSize": []
+        },
+        "demon": {
+            "default": {
+                "offsets": [2.5, 2],
+                "additionalSize": [-15,-15]
+            },
+            "easy": {
+                "offsets": [-7.25,-11.25],
+                "additionalSize": [-5,-5]
+            },
+            "medium": {
+                "offsets": [-2,-11.25],
+                "additionalSize": []
+            },
+            "hard": {
+                "offsets": [-7.5,-9.5],
+                "additionalSize": []
+            },
+            "insane": {
+                "offsets": [-5,-11.25],
+                "additionalSize": []
+            },
+            "extreme": {
+                "offsets": [5.5,-10],
+                "additionalSize": []
+            }
+        }
+    },
+    "difficulty": {
+        "demon": {
+            "default": {
+                "offsets": [10,-7]
+            },
+            "extreme": {
+                "offsets": [-5]
+            }
+        }
+    }
+}

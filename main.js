@@ -33,17 +33,25 @@ if(INTEST === false) var app = express(); // creates new express app instance
 var port = process.env.PORT || 8080; // assign port. if no port given use localhost
 if(INTEST === false) initExpress(); // initializes express port listening
 
-
 //////////////////////////////////// INIT //////////////////////////////////////
 
 var textureScaleFactor = 0.5; // the texture scale. used in offsets BASE IS 2048
 var loading = true; // indicates loading state;
-var config = JSON.parse(fs.readFileSync("./config.json", "utf8")); // parse config file
-var colors = JSON.parse(fs.readFileSync("./resources/player/colors.json", "utf8")); // parse color storage file
-var tracks = JSON.parse(fs.readFileSync("./resources/level/tracks.json", "utf8")); // parse audio tracks file
-var iconList = JSON.parse(fs.readFileSync("./resources/player/iconList.json", "utf8"));
+var config = require("./config.json"); // parse config file
+var colors = require("./resources/player/colors.json"); // parse color storage file
+var tracks = require("./resources/level/tracks.json"); // parse audio tracks file
+var iconList = require("./resources/player/iconList.json")
 var sheetData = plist.parse(fs.readFileSync("./resources/player/player-spritesheet.plist", "utf8")).frames;
 var icons = Object.keys(sheetData).filter(removeGlow); // get all icon names and filter
+
+// GD ACCOUNT //
+//let gd_password  = encodeGJP("0");
+//let gd_accountid = 0;
+//            //
+
+let positions = require("./resources/level/positions.json");
+/*let gdlinks = require("./links.json");*/
+let path = require("path")
 
 // load static images
 var spritesheet; // placeholder
@@ -51,6 +59,31 @@ var bigFont; // placeholder
 var bigFontHD // placeholder
 var bigFontYellow // placeholder
 var descriptionFont // placeholder
+var levelSheet; // placeholder
+
+var levelCoins,      //  
+	demondiffs,      //  v v v v v v
+	difficulties,    //  placeholder
+	fCoin,           //  ^ ^ ^ ^ ^ ^
+	eCoin,           //  
+	skeletonLevel;   //  
+
+function loadLevelSheet(lsheet) {
+	levelSheet    = lsheet;
+	levelCoins    = levelSheet.clone().crop(86,400+(98+98),41,82);
+	demondiffs    = levelSheet.clone().crop(86,0,110,400).rotate(90);
+	difficulties  = levelSheet.clone().crop(0,0,86,689);
+	fCoin         = levelSheet.clone().crop(86,400+98,96,98);
+	eCoin         = levelSheet.clone().crop(86,400,96,98);
+	skeletonLevel = levelSheet.clone().crop(86+110,0,400,800).rotate(90);
+	return {levelSheet,
+			levelCoins,
+			demondiffs,
+			difficulties,
+			fCoin,
+			eCoin,
+			skeletonLevel};
+}
 // load all static images and bind them to global vars. We never change these.
 Jimp.read("./resources/player/player-spritesheet.png", function(err1, image1) {
 	spritesheet = image1;
@@ -62,8 +95,11 @@ Jimp.read("./resources/player/player-spritesheet.png", function(err1, image1) {
 				bigFontYellow = font3;
 				Jimp.loadFont(Jimp.FONT_SANS_32_WHITE, function(err5, font4) {
 					descriptionFont = font4
-					if (err1 || err2 || err3 || err4 || err5) console.log([err1, err2, err3, err4, err5]);
-					console.log("Finished initialization!");
+					Jimp.read("./resources/level/levelSs.png", function(err6, lsheet) {
+						if (err1 || err2 || err3 || err4 || err5 || err6) console.log([err1, err2, err3, err4, err5, err6]);
+						loadLevelSheet(lsheet);
+						console.log("Finished initialization!");
+					})
 				});
 			});
 		});
@@ -120,13 +156,82 @@ client.Dispatcher.on("MESSAGE_CREATE", function(e) {
 				errorOut(6, e.message); // if blank error out
 			};
 		}
+		/*
+		// check if link account command
+		else if (messageCommand[0] == "link") {
+			// check if not blank
+			if (messageCommand.length > 1) {
+				let GD_user = messageContent.substr(messageCommand[0].length + 1); // remove command and empty space after it
+				linkAccount(GD_user, e.message); // pass to poller
+			} else {
+				errorOut(7, e.message); // if blank error out
+			};
+		}
+		*/
 	};
+
+	/*
+
+	if(e.message.mentions.find(i=>i.id === client.User.id)) {
+		let id = e.message.content.replace(/<@(!)?(.*?)>/g,"").replace(/ +/g, "");
+		if(gdlinks[e.message.author.id].linkID === id) {
+			confirmLink(e.message);
+		}
+	}
+
+	*/
 });
 
 ///////////////////////////////////// MISC /////////////////////////////////////
 
 // Use the search function to get ID
+/*
+function confirmLink(msg){
+	request.post({
+			url: 'http://www.boomlings.com/database/getGJUsers20.php',
+			form: {
+				gameVersion: "20",
+				binaryVersion: "30",
+				gdw: 0,
+				gjp: gd_password,
+				accountID: gd_accountid,
+				page: 0,
+				total: 0,
+				secret: "Wmfd2893gb7"
+			}
+		},
+		// returns post data
+		function(err, httpResponse, body) {
+			// parses response data
+			if (err) {
+				console.log(err + "\n" + httpResponse);
+				mseg.channel.sendMessage("Failed to confirm link. [ SEE LOG ]");
+			} else if (body == "-1") {
+				mseg.channel.sendMessage("Failed to confirm link.");
+			} else if (body == "-2") {
+				mseg.channel.sendMessage("Message not found. Link deleted.");
+				delete gdlinks[msg.author.id];
+			} else {
+				let messages = body.split("#")[0].split("|");
+				let mess = messages.find(message => message.split(":")[3] === gdlinks[msg.author.id].account.id);
+				if(new Buffer(mess.split(":")[9],"base64").toString().toLowerCase() === "yes") {
+					msg.channel.sendMessage("Account succesfully linked!");
+					gdlinks[msg.author.id].waiting = false;
+				}
+			}
+		}
+	);
+}
+*/
 function getUserStats(GD_user, mseg) {
+	/*
+	if(mseg.mentions.length > 0) {
+		let l = gdlinks[mseg.mentions[0].id];
+		if(!l) errorOut(8, mseg);
+		if(l.waiting===true) errorOut(9, mseg);
+		GD_user = l.account.id;
+	}
+	*/
 
 	//////////// FIRST REQUEST
 	// post request to the boomlings server
@@ -336,6 +441,75 @@ function getLevelStats(GD_level, mseg, daily) {
 			};
 		});
 };
+/*
+function linkAccount(GD_user, message) {
+	//////////// FIRST REQUEST
+	// post request to the boomlings server
+
+	let linkID = Object.keys(gdlinks).length;
+	function genMessage(name) {
+		return new Buffer("Hello, " + name + ". The discord user \"" + message.author.username + "#" + message.author.discriminator + "\" wants to link your account to his discord account. If this isnt you, ignore this message. But if you are, reply with \"Yes\" and ping the bot in discord with the message \"" + linkID + "\".").toString("base64");
+	}
+	request.post({
+			url: 'http://www.boomlings.com/database/getGJUsers20.php',
+			form: {
+				gameVersion: "21",
+				binaryVersion: "33",
+				str: GD_user,
+				total:0,
+				page:0,
+				secret: "Wmfd2893gb7"
+			}
+		},
+		// returns post data
+		function(err, httpResponse, body) {
+			// parses response data
+			if (err) {
+				console.log(err + "\n" + httpResponse);
+				errorOut(1, message);
+			} else if (body == "-1") {
+				message.channel.sendMessage("Account not found")
+			} else {
+				let name = body.split(":")[1];
+				let id = formatData(body.split("#")[0].split("|")[0])["16"];
+				gdlinks[message.author.id+""] = {waiting: true, linkID: linkID + 1, account: {
+						name,
+						id
+					}
+				};
+				fs.writeFileSync("./links.json", JSON.stringify(gdlinks));
+				request.post({
+						url: 'http://www.boomlings.com/database/uploadGJMessage20.php',
+						form: {
+							gameVersion: "21",
+							binaryVersion: "33",
+							gdw: 0,
+							accountID: gd_accountid,
+							gjp: gd_password,
+							toAccountID: id,
+							subject: new Buffer("Hello, " + name + ".").toString("base64"),
+							body: genMessage(name),
+							secret: "Wmfd2893gb7"
+						}
+					},
+					// returns post data
+					function(err, httpResponse, body) {
+						// parses response data
+						if (err) {
+							console.log(err + "\n" + httpResponse);
+							message.channel.sendMessage("Failed to send message. [ SEE LOG ]");
+						} else if (body == "-1") {
+							message.channel.sendMessage("Failed to send message.")
+						} else {
+							message.channel.sendMessage("Message sent! Check your gd messages.");
+						}
+					}
+				);
+			}
+		}
+	);
+}
+*/
 
 // player card generator function
 function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, COL1, COL2, GLOW, USERNAME, COINS, USERCOINS, STARS, DEMONS, CREATORPOINTS, DIAMONDS) {
@@ -429,139 +603,134 @@ function generatePlayerCard(mseg, ICON, SHIP, BALL, UFO, DART, ROBOT, SPIDER, CO
 var levelLengths = ["Tiny", "Short", "Medium", "Long", "XL"] // Array containing level lenght values
 
 function generateLevelCard(mseg, LEVELID, LEVELNAME, LEVELDESC, AUTHORNAME, DIFFICULTY, DOWNLOADS, LIKES, DEMON, AUTO, STARS, FEATURED, LENGTH, SONGID, COINS, FEATUREDCOINS, SONGNAME, SONGAUTHOR, EPIC, DEMONDIFF, DAILY) {
+	delete require.cache[path.resolve("./resources/level/positions.json")]; // delete require cache
+	positions = require("./resources/level/positions.json");
 
-	// load in all images we need
-	Jimp.read("./resources/level/skeleton-level.png", function(err1, skeletonLevel) {
-		Jimp.read("./resources/level/difficulties.png", function(err2, difficulties) {
-			Jimp.read("./resources/level/demonDifficulties.png", function(err2, demondiffs) {
-				Jimp.read("./resources/level/featuredCoin.png", function(err2, fCoin) {
-					Jimp.read("./resources/level/epicCoin.png", function(err2, eCoin) {
-						Jimp.read("./resources/level/levelCoins.png", function(err3, levelCoins) {
 
-							// error handling
-							if (err1 || err2 || err3) {
-								errorOut(2, mseg);
-								console.log([err1, err2, err3]);
-								return; // stop function execution
-							} else {
+	let outputfile = "./output/" + Math.random().toString(36).substr(2, 5) + ".png" // create a random name for the output file
+	let demonornormal = difficulties;
+	let demon         = false;
+	let diffOffsets   = [0,0];
+	let eCoinOffsets  = positions.epicCoin.default.offsets;
+	let fCoinOffsets  = positions.featureCoin.default.offsets;
+	let fCoinAddSize  = [0,0];
+	let eCoinAddSize  = [0,0];
+	// Difficulty handler
 
-								let outputfile = "./output/" + Math.random().toString(36).substr(2, 5) + ".png" // create a random name for the output file
-								let demonornormal = difficulties;
-								let demon         = false;
-								let diffOffsets   = [0,0];
-								let eCoinOffsets  = [0,0];
-								let fCoinOffsets  = [0,0];
-								fCoinOffsets[0] = -5;
-								fCoinOffsets[1] = -17.5;
-								eCoinOffsets[0] = -5;
-								eCoinOffsets[1] = -25;
-								// Difficulty handler
-								if (DEMON == "1") {
-									// Handle positions
+	if (DEMON == "1") {
+		// Handle positions
 
-									eCoinOffsets[0] = -12 + 14.75;    // epic border offsetx
-									eCoinOffsets[1] = -22.5 + 16.5;   // epic border offsety
-									fCoinOffsets[0] = 2.5;            // featured border offsetx
-									fCoinOffsets[1] = 2;              // featured border offsety
-									diffOffsets[0] = -5 + 15;         // difficulty offsetx
-									diffOffsets[1] = -22 + 15;        // difficulty offsety
+		eCoinOffsets = positions.epicCoin.demon.default.offsets;    // epic border offset
+		fCoinOffsets = positions.featureCoin.demon.default.offsets  // featured border offset
+		diffOffsets  = positions.difficulty.demon.default.offsets;  // difficulty offset
 
-									// Demon difficulties
-									if (DEMONDIFF == "3") { 
-										demondiffs.crop(72, 0, 72, 106); // easy demon
-									} else if (DEMONDIFF == "4") {
-										demondiffs.crop(144, 0, 82, 106); //medium demon
-										fCoinOffsets[0] += 4;
-										eCoinOffsets[0] += 5;
-									} else if (DEMONDIFF == "0") {
-										demondiffs.crop(0, 0, 72, 108); //hard demon
-										fCoinOffsets[1] += 1.5;
-									} else if (DEMONDIFF == "5") {
-										demondiffs.crop(226, 0, 76, 108); //insane demon
-										fCoinOffsets[0] += 1.5;
-										fCoinOffsets[1] += 1;
-										eCoinOffsets[0] += 2;
-									} else if (DEMONDIFF == "6") {
-										demondiffs.crop(302, 0, 98, 110); //extreme demon
-										diffOffsets[0] = -5;
-										fCoinOffsets[0] += 13;
-										fCoinOffsets[1] += 3;
-										eCoinOffsets[0] += 13;
-										eCoinOffsets[1] += 3;
-									}
-									demondiffs.resize(demondiffs.bitmap.width - 15, demondiffs.bitmap.height - 15);
-									demonornormal = demondiffs;
-									demon = true;
-								} else if (AUTO == "1") {
-									difficulties.crop(0, 604, 86, 86); // if auto use auto
-								} else {
-									difficulties.crop(0, (parseInt(DIFFICULTY) / 10) * 86, 86, 86); // else use other
-								};
 
-								// coins handler
-								if (FEATUREDCOINS == "1") {
-									levelCoins.crop(0, 0, 41, 41); // if featured coin use apropriate image
-								} else {
-									levelCoins.crop(0, 41, 41, 41); // if not use other image
-								};
-								// draw X ammount of coins
-								for (let i = 0; i < parseInt(COINS); i++) {
-									if (i > 2) {
-										break;
-									} // break if too much coins
-									skeletonLevel.composite(levelCoins, 425 + (i * 25), 95);
-								}
+		// Demon difficulties
+		if (DEMONDIFF == "3") { 
+			demondiffs.crop(72, 0, 72, 106); // easy demon
+			fCoinOffsets[0] += positions.featureCoin.demon.easy.offsets[0];
+			fCoinOffsets[1] += positions.featureCoin.demon.easy.offsets[1];
+			eCoinOffsets[0] +=    positions.epicCoin.demon.easy.offsets[0];
+			eCoinOffsets[1] +=    positions.epicCoin.demon.easy.offsets[1];
+			fCoinAddSize = positions.featureCoin.demon.easy.additionalSize;
+			eCoinAddSize = positions.epicCoin.demon.easy.additionalSize;
+		} else if (DEMONDIFF == "4") {
+			demondiffs.crop(144, 0, 82, 106); //medium demon
+			fCoinOffsets[0] += positions.featureCoin.demon.medium.offsets[0];
+			fCoinOffsets[1] += positions.featureCoin.demon.medium.offsets[1];
+			eCoinOffsets[0] +=    positions.epicCoin.demon.medium.offsets[0];
+			eCoinOffsets[1] +=    positions.epicCoin.demon.medium.offsets[1];
+			fCoinAddSize = positions.featureCoin.demon.medium.additionalSize;
+		} else if (DEMONDIFF == "0") {
+			demondiffs.crop(0, 0, 72, 108); //hard demon
+			fCoinOffsets[1] +=   positions.featureCoin.demon.hard.offsets[1];
+			eCoinOffsets[0] +=      positions.epicCoin.demon.hard.offsets[0];
+			eCoinOffsets[1] +=      positions.epicCoin.demon.hard.offsets[1];
+		} else if (DEMONDIFF == "5") {
+			demondiffs.crop(226, 0, 76, 108); //insane demon
+			fCoinOffsets[0] += positions.featureCoin.demon.insane.offsets[0];
+			fCoinOffsets[1] += positions.featureCoin.demon.insane.offsets[1];
+			eCoinOffsets[0] +=    positions.epicCoin.demon.insane.offsets[0];
+			eCoinOffsets[1] +=    positions.epicCoin.demon.insane.offsets[1];
+		} else if (DEMONDIFF == "6") {
+			demondiffs.crop(302, 0, 98, 110); //extreme demon
+			diffOffsets [0] =   positions.difficulty.demon.extreme.offsets[0];
+			fCoinOffsets[0] += positions.featureCoin.demon.extreme.offsets[0];
+			fCoinOffsets[1] += positions.featureCoin.demon.extreme.offsets[1];
+			eCoinOffsets[0] +=    positions.epicCoin.demon.extreme.offsets[0];
+			eCoinOffsets[1] +=    positions.epicCoin.demon.extreme.offsets[1];
+		}
+		eCoinAddSize = positions.epicCoin.demon.default.additionalSize;
 
-								// featured handler
-								if (parseInt(FEATURED) > 0) {
-									skeletonLevel.print(bigFontYellow, 655, 58, STARS); // if featured draw the stars count in yellow
-									if(demon === true) {
-										fCoin.resize(fCoin.bitmap.width - 15, fCoin.bitmap.height - 15);
-										skeletonLevel.composite(fCoin, 525 + diffOffsets[0] + fCoinOffsets[0] - 15, 58 + diffOffsets[1]  + fCoinOffsets[1] - 15);
-									} else {
-										skeletonLevel.composite(fCoin, 525 + diffOffsets[0] + fCoinOffsets[0], 58 + diffOffsets[1]  + fCoinOffsets[1]);
-									}
-								} else {
-									skeletonLevel.print(bigFont, 655, 58, STARS); // if not in white
-								}
+		demondiffs.resize(demondiffs.bitmap.width - 15, demondiffs.bitmap.height - 15);
+		demonornormal = demondiffs;
+		demon = true;
+	} else if (AUTO == "1") {
+		eCoinOffsets[0] += .5;
+		difficulties.crop(0, 604, 86, 86); // if auto use auto
+	} else {
+		difficulties.crop(0, (parseInt(DIFFICULTY) / 10) * 86, 86, 86); // else use other
+	};
 
-								if (parseInt(EPIC) > 0) {
-									if(demon===true) {
-										eCoin.resize(eCoin.bitmap.width-15,eCoin.bitmap.height-15);
-										skeletonLevel.composite(eCoin, 525 + diffOffsets[0] + eCoinOffsets[0] - 15, 58 + diffOffsets[1]  + eCoinOffsets[1] - 15);
-									} else {
-										skeletonLevel.composite(eCoin, 525 + diffOffsets[0] + eCoinOffsets[0], 58 + diffOffsets[1]  + eCoinOffsets[1]);
-									}
-								}
+	// coins handler
+	if (FEATUREDCOINS == "1") {
+		levelCoins.crop(0, 0, 41, 41); // if featured coin use apropriate image
+	} else {
+		levelCoins.crop(0, 41, 41, 41); // if not use other image
+	};
+	// draw X ammount of coins
+	for (let i = 0; i < parseInt(COINS); i++) {
+		if (i > 2) {
+			break;
+		} // break if too much coins
+		skeletonLevel.composite(levelCoins, 415 + (i * 25), 95);
+	}
 
-								// composes image
-								skeletonLevel
-									.print(bigFontHD, 10, -6, LEVELNAME)
-									.print(bigFontYellow, 10, 50, "by " + AUTHORNAME + (DAILY === true ? " (Daily)" : ""))
-									.print(bigFont, 5, 113, LEVELID)
-									.print(bigFont, 235, 80, LIKES)
-									.print(bigFont, 235, 114, DOWNLOADS)
-									.print(bigFont, 655, 103, levelLengths[parseInt(LENGTH)])
-									.print(descriptionFont, 48, 155, LEVELDESC, 790)
-									.print(bigFont, 55, 325, SONGNAME)
-									.print(bigFontYellow, 55, 360, "by " + SONGAUTHOR)
-									.composite(demonornormal, 525 + diffOffsets[0], 58 + diffOffsets[1])
-									// write file
-									.write(outputfile, function() {
-										// upload file
-										mseg.channel.uploadFile(outputfile).then(function() {
-											// delete file
-											fs.unlink(outputfile);
-											console.log("SUCCESS: " + LEVELNAME + "[" + LEVELID + "]")
-										});
-									});
-							};
-						});
-					});
-				});
+	// featured handler
+	if (parseInt(FEATURED) > 0) {
+		skeletonLevel.print(bigFontYellow, 655, 58, STARS); // if featured draw the stars count in yellow
+		if(demon === true) {
+			fCoin.resize((fCoin.bitmap.width - 13) + fCoinAddSize[0], (fCoin.bitmap.height - 13) + fCoinAddSize[0]);
+			skeletonLevel.composite(fCoin, 525 + diffOffsets[0] + fCoinOffsets[0] - 13, 58 + diffOffsets[1]  + fCoinOffsets[1] - 13);
+		} else {
+			skeletonLevel.composite(fCoin, 525 + diffOffsets[0] + fCoinOffsets[0], 58 + diffOffsets[1]  + fCoinOffsets[1]);
+		}
+	} else {
+		skeletonLevel.print(bigFont, 655, 58, STARS); // if not in white
+	}
+
+	if (parseInt(EPIC) > 0) {
+		if(demon===true) {
+			eCoin.resize((eCoin.bitmap.width-5) + eCoinAddSize[0],(eCoin.bitmap.height-5) + eCoinAddSize[0]);
+			skeletonLevel.composite(eCoin, 525 + diffOffsets[0] + eCoinOffsets[0] - 5, 58 + diffOffsets[1]  + eCoinOffsets[1] - 5);
+		} else {
+			skeletonLevel.composite(eCoin, 525 + diffOffsets[0] + eCoinOffsets[0], 58 + diffOffsets[1]  + eCoinOffsets[1]);
+		}
+	}
+
+	// composes image
+	skeletonLevel
+		.print(bigFontHD, 10, -6, LEVELNAME)
+		.print(bigFontYellow, 10, 50, "by " + AUTHORNAME + (DAILY === true ? " (Daily)" : ""))
+		.print(bigFont, 5, 113, LEVELID)
+		.print(bigFont, 235, 80, LIKES)
+		.print(bigFont, 235, 114, DOWNLOADS)
+		.print(bigFont, 655, 103, levelLengths[parseInt(LENGTH)])
+		.print(descriptionFont, 48, 155, LEVELDESC, 790)
+		.print(bigFont, 55, 325, SONGNAME)
+		.print(bigFontYellow, 55, 360, "by " + SONGAUTHOR)
+		.composite(demonornormal, 525 + diffOffsets[0], 58 + diffOffsets[1])
+		// write file
+		.write(outputfile, function() {
+			// upload file
+			mseg.channel.uploadFile(outputfile).then(function() {
+				// delete file
+				fs.unlink(outputfile);
+				console.log("SUCCESS: " + LEVELNAME + "[" + LEVELID + "]")
+				loadLevelSheet(levelSheet); // reload sprites after being cropped
 			});
 		});
-	});
+
 };
 
 //////////////////////////////////////////////////////
@@ -646,7 +815,10 @@ var errorString = {
 	"3": "Database Error! [ LEVEL NOT FOUND ]",
 	"4": "Unknown Error! [ SEE LOG ]",
 	"5": "USAGE `" + config.command_prefix + "stats <USERNAME>`",
-	"6": "USAGE `" + config.command_prefix + "level <NAME OR ID>`"
+	"6": "USAGE `" + config.command_prefix + "level <NAME OR ID>`",
+	"7": "USAGE `" + config.command_prefix + "link <USERNAME OR ID>`",
+	"8": "This user is not linked! [ USER NOT LINKED ]",
+	"9": "This user still hasn't confirmed the link. [ LINK NOT CONFIRMED ]"
 };
 
 // error printer
@@ -863,3 +1035,52 @@ function findLastLeg(value) {
 function transform(val) {
 	return JSON.parse(val.replace(/{/g, "[").replace(/}/g, "]"));
 };
+
+
+
+// gjptools
+function encodeGJP(pass) {
+    let array = pass.split("");
+    let xor   = [51,55,53,50,54];
+    let key   = 0;
+    let k     = 0;
+    let cont  = 0;
+    let parola= [];
+    let temp  = [pass];
+    for(let value of array) {
+        parola[cont] = value.charCodeAt(0)^xor[k];
+        if(k != 4)
+            k++;
+        else
+            k = 0;
+        cont++;
+    }
+    for(k = 0; k < parola.length; k++) {
+        temp[k] = String.fromCharCode(parola[k]);
+    }
+    let lol = temp.join("");
+    return new Buffer(lol).toString("base64");
+}
+function decodeGJP(pass) {
+    let decode = new Buffer(pass, "base64").toString("utf8");
+    let array = decode.split("");
+    let xor   = [51,55,53,50,54];
+    let key   = 0;
+    let k     = 0;
+    let cont  = 0;
+    let parola= [];
+    let temp  = [pass];
+    for(let value of array) {
+        parola[cont] = value.charCodeAt(0)^xor[k];
+        if(k != 4)
+            k++;
+        else
+            k = 0;
+        cont++;
+    }
+    for(k = 0; k < parola.length; k++) {
+        temp[k] = String.fromCharCode(parola[k]);
+    }
+    let lol = temp.join("");
+    return lol;
+}
