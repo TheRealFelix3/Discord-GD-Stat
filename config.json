@@ -1,7 +1,7 @@
 {
   "token": "",
-  "name": "GD STATS",
-  "playing": "made by Nexrem",
+  "name": "Maspoxavida",
+  "playing": "made by TheRealFelix",
   "command_prefix": "^",
   "getTarget": "http://discord-gd-stats-bot.herokuapp.com/wake.txt"
 }
